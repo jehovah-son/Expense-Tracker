@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../app/generated/prisma';
 // This file is used to create a single instance of Prisma Client
 // to avoid issues with multiple connections in development mode.
 declare global {

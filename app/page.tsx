@@ -1,5 +1,6 @@
 import Guest from "@/component/Guest";
 import { currentUser } from "@clerk/nextjs/server";
+import AddTransaction from "@/component/AddTransaction";
 export default async function HomePage() {
   // Check if the user is currently signed in
   const user = await currentUser();
@@ -11,7 +12,11 @@ export default async function HomePage() {
 
   return (
     <main>
-      <h2>Welcome, {user.firstName}</h2>
+      <h2>
+        Welcome, {user.firstName} {user.lastName}
+      </h2>
+
+      <AddTransaction />
     </main>
   );
 }
