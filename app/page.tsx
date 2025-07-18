@@ -2,6 +2,8 @@ import Guest from "@/component/Guest";
 import { currentUser } from "@clerk/nextjs/server";
 import AddTransaction from "@/component/AddTransaction";
 import Balance from "@/component/Balance";
+import IncomeExpense from "@/component/incomeExpense";
+import TransactionList from "@/component/TransactionList";
 export default async function HomePage() {
   // Check if the user is currently signed in
   const user = await currentUser();
@@ -17,8 +19,9 @@ export default async function HomePage() {
         Welcome, {user.firstName} {user.lastName}
       </h2>
       <Balance />
-
+      <IncomeExpense />
       <AddTransaction />
+      <TransactionList />
     </main>
   );
 }
