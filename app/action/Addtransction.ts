@@ -1,4 +1,7 @@
 'use server';
+import { auth } from "@clerk/nextjs/server";
+import { Db } from "@/lib/db";
+import { revalidatePath } from "next/cache";
 
 interface TransactionData {
     text: string;
@@ -19,13 +22,13 @@ async function addTransaction(
     formData: FormData
 ): Promise<TransactionResult> {
     // we get the data from the form
-    //and do a little bit of error checking or validationand send back either the transaction data if everything is ok or an error message
+    //and do a little bit of error checking or validation and send back either the transaction data if everything is ok or an error message
 
     const textValue = formData.get("text");
     const amountValue = formData.get("amount");
 
     // validate the data
-    if (!textValue || !amountValue || textValue === "") {
+    if (!textValue || textValue === "" || !amountValue) {
         return { error: "Invalid input" };
     }
     ////////////////////
@@ -33,16 +36,40 @@ async function addTransaction(
 
     const amount = parseFloat(amountValue.toString());// ensures amount is a number
 
-    // create the transaction object
-    const transactionData: TransactionData = { text, amount };
+    //to add the user id from clerk with the transaction
+    // we use the auth function from clerk to get the user id
+    // this will give us the user id of the currently logged in user
+    // [clerk Id]
+    //get logged in user
+    const { userId } = await auth();
+    // check for user
+    if (!userId) {
+        return { error: "User not found" };
+    }
 
-    // here you would typically send this data to your server or database
-    console.log("Transaction added:", transactionData);
 
 
-    // as long no error we return the transaction data
-    // return the transaction data
-    return { data: transactionData };
+    // to create and save the transaction to the database
+    // we use the prisma client to create a new transaction in the database
+    // we put it in a try catch block to handle any errors that might occur during the database operation
+    try {
+        const transactionData = await Db.userTransaction.create({
+            data: {
+                text,
+                amount,
+                userId, // associate the transaction with the logged-in user
+            },
+        });
+        // revalidate the path
+        revalidatePath("/");
+        // here you would typically send this data to your server or database
+        // return the transaction data
+        return { data: transactionData };
+
+    } catch (error) {
+        console.error("Error adding transaction:", error);
+        return { error: "Failed to add transaction" };
+    }
 }
 
 //we want make sure we export this function down at the bottom
